@@ -26,7 +26,7 @@ CStatus *g_Status = new CStatus;
 CToolBar *g_ToolBar = new CToolBar;
 CTreeView *g_TreeView = new CTreeView;
 
-
+NMHDR *pnm;
 //////////////////////////////////////////////////////////////////////
 
 
@@ -164,33 +164,116 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		////
 		g_Address = new CAddress;
-		g_Address->Create(hWnd, IDC_ADDRESS, hInst);
+		//g_Address->Create(hWnd, IDC_ADDRESS, hInst);
 
 		//Khởi tạo các control của mình
 
 		g_ToolBar = new CToolBar;
-		g_ToolBar->Create(hWnd, IDC_TOOLBAR, hInst, 0, 0, 0, 0);
-		g_ToolBar->EnableBack(FALSE);
-		g_ToolBar->EnableForward(FALSE);
+		//g_ToolBar->Create(hWnd, IDC_TOOLBAR, hInst, 0, 0, 0, 0);
+		//g_ToolBar->EnableBack(FALSE);
+		//g_ToolBar->EnableForward(FALSE);
 
 		g_Status = new CStatus;
-		g_Status->Create(hWnd, IDC_STATUSBAR, hInst);
+		//g_Status->Create(hWnd, IDC_STATUSBAR, hInst);
 
 
 		///
 
 		Cdr->GetSystemDrives();
 		///
+		
 		g_TreeView = new CTreeView;
 		g_TreeView->Create(hWnd, IDC_TREEVIEW, hInst, main.right / 3, main.bottom);
 		g_TreeView->LoadMyComputer(Cdr);
 		g_TreeView->GetFocus();
+		
 		//
 		Clv.Create(hWnd, IDC_LISTVIEW, hInst, (main.right - main.left) * 2 / 3 + 1, main.bottom, main.right / 3);
 		Clv.LoadMyComputer(Cdr);
 		break;
 	}
-		///////////
+	////////////////
+		
+	case WM_NOTIFY:
+	{
+		pnm = (LPNMHDR)lParam;
+		int nCurSelIndex;
+		LPNMTOOLBAR lpnmToolBar = (LPNMTOOLBAR)pnm;
+		LPNMTREEVIEW lpnmTree = (LPNMTREEVIEW)pnm;
+
+		switch (pnm->code)
+		{
+		case TVN_ITEMEXPANDING:
+			g_TreeView->PreloadExpanding(lpnmTree->itemOld.hItem, lpnmTree->itemNew.hItem);
+			break;
+			//------------------------------------------------------------------------------
+		case TVN_SELCHANGED:
+			g_TreeView->Expand(g_TreeView->GetCurSel());
+			Clv.DeleteAll(); //Xóa sạch List View để nạp cái mới
+			Clv.LoadChild(g_TreeView->GetCurPath(), Cdr);
+			/*
+			g_History->InsertAfterCur(g_TreeView->GetCurPath());
+			if (g_History->GetCur()->GetPrev() != NULL)
+			{
+			g_ToolBar->EnableBack(TRUE);
+			}*/
+			break;
+			//------------------------------------------------------------------------------
+		case NM_CLICK:
+			if (pnm->hwndFrom == Clv.GetHandle())
+			{
+				nCurSelIndex = ListView_GetNextItem(Clv.GetHandle(), -1, LVNI_FOCUSED);
+				if (nCurSelIndex != -1)
+					Clv.DisplayInfoCurSel();
+
+			}
+			else
+				switch (pnm->idFrom)
+			{
+				/*
+				case IDC_TOOLBAR:
+				switch (lpnmToolBar->iItem)
+				{
+				case IDC_TOOLBAR_UP:
+				DoGoUp();
+				break;
+				case IDC_TOOLBAR_BACK:
+				DoGoBack();
+				break;
+				case IDC_TOOLBAR_FORWARD:
+				DoGoForward();
+				break;
+				}
+				break; //Case IDC_TOOLBAR
+				//-----------------------------------------------------------------------
+
+				case IDC_ADDRESS:
+				if (lpnmToolBar->iItem == IDC_ADDRESS_GO)
+				DoGo();
+				break;*/
+			}//switch (pnm->idFrom)
+			break; //case NM_CLICK:
+
+			//------------------------------------------------------------------------------
+		case NM_DBLCLK:
+			if (pnm->hwndFrom == Clv.GetHandle())
+				Clv.LoadCurSel();
+			break;
+			//------------------------------------------------------------------------------
+			/*
+			case NM_CUSTOMDRAW: //Ve lai cua so con
+			if (pnm->hwndFrom == g_TreeView->GetHandle())
+			DoSizeTreeView();
+			break;
+			//------------------------------------------------------------------------------
+			case TBN_DROPDOWN:
+			if (lpnmToolBar->iItem == IDC_TOOLBAR_VIEW)
+			DoViewChange(lpnmToolBar);
+			break;
+			*/
+		}break;
+
+	}
 	case WM_SIZE:
 		g_TreeView->Size(lParam);
 		GetWindowRect(g_TreeView->GetHandle(), &g_TreeViewRect); //Cap nhat lai cho TreeView
