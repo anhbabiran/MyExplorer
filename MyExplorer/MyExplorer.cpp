@@ -6,7 +6,7 @@
 
 
 ////////////////////////////////////TESTTTTTTTTTTTTT////////////////////
-
+void DoViewChange(LPNMTOOLBAR lpnmToolBar);
 //include
 #include "CListView.h"
 //
@@ -133,7 +133,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
-   ShowWindow(hWnd, nCmdShow);
+   ShowWindow(hWnd, SW_MAXIMIZE); // bật max cỡ CT
    UpdateWindow(hWnd);
 
    return TRUE;
@@ -164,17 +164,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		////
 		g_Address = new CAddress;
-		//g_Address->Create(hWnd, IDC_ADDRESS, hInst);
+		g_Address->Create(hWnd, IDC_ADDRESS, hInst);
 
 		//Khởi tạo các control của mình
 
 		g_ToolBar = new CToolBar;
-		//g_ToolBar->Create(hWnd, IDC_TOOLBAR, hInst, 0, 0, 0, 0);
-		//g_ToolBar->EnableBack(FALSE);
-		//g_ToolBar->EnableForward(FALSE);
+		g_ToolBar->Create(hWnd, IDC_TOOLBAR, hInst, 0, 0, 0, 0);
+		g_ToolBar->EnableBack(FALSE);
+		g_ToolBar->EnableForward(FALSE);
 
 		g_Status = new CStatus;
-		//g_Status->Create(hWnd, IDC_STATUSBAR, hInst);
+		g_Status->Create(hWnd, IDC_STATUSBAR, hInst);
 
 
 		///
@@ -189,7 +189,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		
 		//
 		Clv.Create(hWnd, IDC_LISTVIEW, hInst, (main.right - main.left) * 2 / 3 + 1, main.bottom, main.right / 3);
-		Clv.LoadMyComputer(Cdr);
+		Clv.LoadMyComputer(Cdr); // Lỗi ch load hết dc listview
 		break;
 	}
 	////////////////
@@ -264,13 +264,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case NM_CUSTOMDRAW: //Ve lai cua so con
 			if (pnm->hwndFrom == g_TreeView->GetHandle())
 			DoSizeTreeView();
-			break;
+			break;*/
 			//------------------------------------------------------------------------------
 			case TBN_DROPDOWN:
 			if (lpnmToolBar->iItem == IDC_TOOLBAR_VIEW)
 			DoViewChange(lpnmToolBar);
 			break;
-			*/
+			
 		}break;
 
 	}
@@ -294,6 +294,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// Parse the menu selections:
 		switch (wmId)
 		{
+		///////////////////////////////
+			// lỗi k load hết dc program file
+		case ID_VIEW_DETAILS:
+			Clv.ChangeViewOption(1);
+			break;
+		case ID_VIEW_ICONS:
+			Clv.ChangeViewOption(0);
+			break;
+		//////////////////////////////
 		case IDM_ABOUT:
 		{
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -338,4 +347,30 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return (INT_PTR)FALSE;
+}
+
+
+void DoViewChange(LPNMTOOLBAR lpnmToolBar)
+{
+	HMENU     hPopupMenu = NULL;
+	HMENU     hMenuLoaded;
+	RECT rc;
+	TPMPARAMS tpm;
+
+	SendMessage(lpnmToolBar->hdr.hwndFrom, TB_GETRECT,
+		(WPARAM)lpnmToolBar->iItem, (LPARAM)&rc);
+	MapWindowPoints(lpnmToolBar->hdr.hwndFrom,
+		HWND_DESKTOP, (LPPOINT)&rc, 2);
+	tpm.cbSize = sizeof(TPMPARAMS);
+	tpm.rcExclude = rc;
+
+	hMenuLoaded = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU3));
+
+	hPopupMenu = GetSubMenu(hMenuLoaded, 0);
+
+	TrackPopupMenuEx(hPopupMenu,
+		TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL,
+		rc.left, rc.bottom, g_ToolBar->GetHandle(), &tpm);
+
+	DestroyMenu(hMenuLoaded);
 }
