@@ -30,13 +30,7 @@
     <ClInclude Include="CListView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CConverter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CDrive.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CExtractor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CAddress.h">
@@ -68,13 +62,7 @@
     <ClCompile Include="CListView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CConverter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CDrive.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CExtractor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CAddress.cpp">

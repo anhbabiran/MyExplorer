@@ -7,6 +7,7 @@
 
 ////////////////////////////////////TESTTTTTTTTTTTTT////////////////////
 void DoViewChange(LPNMTOOLBAR lpnmToolBar);
+void DoSizeTreeView();
 //include
 #include "CListView.h"
 //
@@ -260,11 +261,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				Clv.LoadCurSel();
 			break;
 			//------------------------------------------------------------------------------
-			/*
+			
 			case NM_CUSTOMDRAW: //Ve lai cua so con
 			if (pnm->hwndFrom == g_TreeView->GetHandle())
 			DoSizeTreeView();
-			break;*/
+			break;
 			//------------------------------------------------------------------------------
 			case TBN_DROPDOWN:
 			if (lpnmToolBar->iItem == IDC_TOOLBAR_VIEW)
@@ -373,4 +374,16 @@ void DoViewChange(LPNMTOOLBAR lpnmToolBar)
 		rc.left, rc.bottom, g_ToolBar->GetHandle(), &tpm);
 
 	DestroyMenu(hMenuLoaded);
+}
+
+void DoSizeTreeView()
+{
+	RECT newTreeRC;
+	GetClientRect(g_TreeView->GetHandle(), &newTreeRC);
+
+	if (newTreeRC.right != g_TreeViewRect.right)
+	{
+		Clv.Size();
+		g_TreeViewRect = newTreeRC;
+	}
 }

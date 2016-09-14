@@ -80,9 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CAddress.h" />
-    <ClInclude Include="CConverter.h" />
     <ClInclude Include="CDrive.h" />
-    <ClInclude Include="CExtractor.h" />
     <ClInclude Include="CListView.h" />
     <ClInclude Include="CStatus.h" />
     <ClInclude Include="CToolBar.h" />
@@ -95,9 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAddress.cpp" />
-    <ClCompile Include="CConverter.cpp" />
     <ClCompile Include="CDrive.cpp" />
-    <ClCompile Include="CExtractor.cpp" />
     <ClCompile Include="CListView.cpp" />
     <ClCompile Include="CStatus.cpp" />
     <ClCompile Include="CToolBar.cpp" />
