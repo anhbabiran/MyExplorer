@@ -32,8 +32,6 @@ public:
 	LPCWSTR		GetPath(HTREEITEM hItem);
 	LPCWSTR		GetCurPath();
 	HTREEITEM	GetCurSel();
-	LPCWSTR		GetCurSelText();
-	HTREEITEM	GetChild(HTREEITEM hItem);
 	void		GetFocus();
 	HTREEITEM	GetDesktop();
 	HTREEITEM	GetMyComputer();
