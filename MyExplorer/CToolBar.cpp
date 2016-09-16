@@ -1,6 +1,7 @@
 #include "CToolBar.h"
 #include "resource.h"
 #include <tchar.h>
+
 CToolBar::CToolBar()
 {
 	m_hInst = NULL;
@@ -35,11 +36,8 @@ void CToolBar::Create(HWND parentWnd, long ID, HINSTANCE hParentInst,
 	AddButton(TBSTATE_ENABLED, BTNS_BUTTON, 7 , IDC_TOOLBAR_PASTE, _T("Paste"), 7);
 	AddButton(TBSTATE_ENABLED, BTNS_SEP, 0 , NULL, NULL, 0);
 
-	AddButton(TBSTATE_ENABLED, BTNS_BUTTON, 45 , IDC_TOOLBAR_COPYTO, _T("Copy To.."), 8);
-	AddButton(TBSTATE_ENABLED, BTNS_BUTTON, 44 , IDC_TOOLBAR_MOVETO, _T("Move To.."), 9);
-	AddButton(TBSTATE_ENABLED, BTNS_SEP, 0 , NULL, NULL, 0);
-
 	AddButton(TBSTATE_ENABLED, BTNS_BUTTON, 10 , IDC_TOOLBAR_DELETE, _T("Delete"), 10);
+	AddButton(TBSTATE_ENABLED, BTNS_BUTTON, 2, IDC_TOOLBAR_DELETE, _T("Favorite"), 10);
 }
 
 BOOL CToolBar::AddButton(BYTE fsState, BYTE fsStyle, int iBitmap, int idCommand, LPTSTR iString, DWORD_PTR dwData)
@@ -63,7 +61,7 @@ void CToolBar::SetButtonImages()
 	SendMessage(m_hToolBar,TB_SETBITMAPSIZE,0,MAKELONG(49, 32));
 	
 	HIMAGELIST hIml = ImageList_Create(24, 24, ILC_MASK | ILC_COLOR32, 47, 0);
-	HBITMAP hBmp = LoadBitmap(m_hInst, MAKEINTRESOURCE(IDB_BITMAP2));
+	HBITMAP hBmp = LoadBitmap(m_hInst, MAKEINTRESOURCE(IDB_BITMAP4));
 
 	ImageList_AddMasked(hIml, hBmp, RGB(0,0,0));
 	ImageList_SetBkColor(hIml, CLR_NONE);
