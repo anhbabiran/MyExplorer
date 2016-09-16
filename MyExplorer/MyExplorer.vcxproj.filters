@@ -96,6 +96,9 @@
     <Image Include="MyExplorer.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="bitmap4.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="MyExplorer.manifest" />

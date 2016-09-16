@@ -110,6 +110,7 @@
     <ResourceCompile Include="MyExplorer.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="bitmap4.bmp" />
     <Image Include="MyExplorer.ico" />
     <Image Include="small.ico" />
   </ItemGroup>
