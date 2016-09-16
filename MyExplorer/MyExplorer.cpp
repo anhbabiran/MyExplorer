@@ -487,18 +487,17 @@ void CreateNewFolder()
 		StrCat(pathtmp, _T("\\"));
 	}
 	StrCat(pathtmp, _T("New folder"));
-	CreateDirectory(pathtmp, NULL);
-	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	if (CreateDirectory(pathtmp, NULL) == 0 || GetLastError() == ERROR_ALREADY_EXISTS)
 	{
-		MessageBox(hWnd, _T("Thư mục đã tồn tại!"), _T("Lỗi"), NULL);
+		MessageBox(hWnd, _T("Không thể tạo thư mục!"), _T("Lỗi"), NULL);
 	}
-	else if (GetLastError() == ERROR_PATH_NOT_FOUND)
+	else
 	{
-		return;
+		MessageBox(hWnd, _T("Tạo thành công!"), _T("Thông báo"), NULL);
 	}
+	DoRefresh();	//Refresh. Đúng. Nhưng hàm parent sida
+
 	// Cho nhập tên ...
-	//Refresh. Đúng. Nhưng hàm parent sida
-	DoRefresh();
 }
 
 void DoRefresh()
