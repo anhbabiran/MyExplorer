@@ -178,6 +178,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_CREATE:
 	{
+		// Đăng kí hotKey chả cần HOOK
+		RegisterHotKey(hWnd, CTRL_C, MOD_CONTROL, 0x43);
+		RegisterHotKey(hWnd, CTRL_V, MOD_CONTROL, 0x56);
+		RegisterHotKey(hWnd, CTRL_X, MOD_CONTROL, 0x58);
+		RegisterHotKey(hWnd, CTRL_R, MOD_CONTROL, 0x52);
+		RegisterHotKey(hWnd, CTRL_N, MOD_CONTROL, 0x4E);
+
 		RECT main;
 		GetWindowRect(hWnd, &main);
 
@@ -212,7 +219,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	////////////////
-
+	case WM_HOTKEY:
+	{
+		if ((int)wParam == CTRL_C)
+			DoCopy();
+		if ((int)wParam == CTRL_V)
+			DoPaste();
+		if ((int)wParam == CTRL_X)
+			DoCut();
+		break;
+	}
 
 	case WM_NOTIFY:
 	{
