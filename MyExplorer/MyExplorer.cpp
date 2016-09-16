@@ -4,10 +4,23 @@
 #include "stdafx.h"
 #include "MyExplorer.h"
 
+#include <string.h>
+#include <shlobj.h>
+//Dùng để sử dụng hàm StrCpy, StrNCat
+#include <shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
 
 ////////////////////////////////////TESTTTTTTTTTTTTT////////////////////
 void DoViewChange(LPNMTOOLBAR lpnmToolBar);
 void DoSizeTreeView();
+
+void CreateNewFolder();
+
+void DoCopy();
+void DoCut();
+void DoPaste();
+void DoRefresh();
+
 //include
 #include "CListView.h"
 //
@@ -20,6 +33,11 @@ void DoSizeTreeView();
 CListView Clv;
 CDrive *Cdr = new CDrive;
 
+///////////////
+HWND hWnd;
+vector<LPCWSTR> listFile; // Để chứa các file để copy hoặc paste
+TCHAR sourceEvent[10240]; // Chứa đường dẫn event
+int checkEvent = 0;  // 1 là copy, 2 là cut
 ////////////////////////////////
 RECT g_TreeViewRect;
 CAddress *g_Address = new CAddress;
@@ -194,7 +212,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	////////////////
-		
+
+
 	case WM_NOTIFY:
 	{
 		pnm = (LPNMHDR)lParam;
@@ -226,28 +245,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				nCurSelIndex = ListView_GetNextItem(Clv.GetHandle(), -1, LVNI_FOCUSED);
 				if (nCurSelIndex != -1)
 					Clv.DisplayInfoCurSel();
-
 			}
 			else
 				switch (pnm->idFrom)
 			{
-				/*
+				
 				case IDC_TOOLBAR:
 				switch (lpnmToolBar->iItem)
 				{
-				case IDC_TOOLBAR_UP:
-				DoGoUp();
-				break;
-				case IDC_TOOLBAR_BACK:
-				DoGoBack();
-				break;
-				case IDC_TOOLBAR_FORWARD:
-				DoGoForward();
-				break;
+					case IDC_TOOLBAR_COPY:
+						DoCopy();
+						break;
+					case IDC_TOOLBAR_CUT:
+						DoCut();
+						break;
+					case IDC_TOOLBAR_PASTE:
+						DoPaste();
+						break;
+						
+					/*
+					case IDC_TOOLBAR_UP:
+					DoGoUp();
+					break;
+					case IDC_TOOLBAR_BACK:
+					DoGoBack();
+					break;
+					case IDC_TOOLBAR_FORWARD:
+					DoGoForward();
+					break;
+					*/
 				}
 				break; //Case IDC_TOOLBAR
 				//-----------------------------------------------------------------------
-
+				/*
 				case IDC_ADDRESS:
 				if (lpnmToolBar->iItem == IDC_ADDRESS_GO)
 				DoGo();
@@ -386,4 +416,78 @@ void DoSizeTreeView()
 		Clv.Size();
 		g_TreeViewRect = newTreeRC;
 	}
+}
+
+void DoCopy()
+{
+	listFile = Clv.GetListPath(); // List các file dc chọn để copy
+	checkEvent = 1;
+}
+
+void DoCut()
+{
+	listFile = Clv.GetListPath(); // List các file dc chọn để copy
+	checkEvent = 2;
+}
+
+
+void DoPaste()
+{
+	//Lấy đường dẫn cần paste tới
+	TCHAR dest[10240];
+	StrCpy(dest, Clv.GetCurParentPath()); //folder trống là ăn gạch ->> ham Parent sida
+	if (wcslen(dest) < 3)
+		StrCat(dest, _T("\\"));
+	//Xử lí đường dẫn file
+	for (int i = 0; i < listFile.size(); i++)
+	{
+		//Lấy tên file
+		TCHAR *parent;
+		int nBackSlachPos = (StrRStrI(listFile[i], NULL, _T("\\")) - listFile[i]);
+		parent = new TCHAR[wcslen(listFile[i])];
+		StrNCpy(parent, listFile[i] + nBackSlachPos + 1, wcslen(listFile[i]));
+		
+		StrCat(dest, _T("\\"));
+		StrCat(dest, parent);
+		if (checkEvent == 1)
+		{
+			CopyFile(listFile[i],dest, NULL);
+			DoRefresh();
+		}
+		if (checkEvent == 2)
+		{
+			MoveFile(listFile[i], dest);
+			DoRefresh();
+		}
+		//MessageBox(hWnd, dest, NULL, NULL);
+	}
+	
+}
+
+void CreateNewFolder()
+{
+	TCHAR pathtmp[10240];
+	StrCpy(pathtmp, Clv.GetCurParentPath());
+	if (wcslen(pathtmp) != 3)
+	{
+		StrCat(pathtmp, _T("\\"));
+	}
+	StrCat(pathtmp, _T("New folder"));
+	CreateDirectory(pathtmp, NULL);
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		MessageBox(hWnd, _T("Thư mục đã tồn tại!"), _T("Lỗi"), NULL);
+	}
+	else if (GetLastError() == ERROR_PATH_NOT_FOUND)
+	{
+		return;
+	}
+	// Cho nhập tên ...
+	//Refresh. Đúng. Nhưng hàm parent sida
+	DoRefresh();
+}
+
+void DoRefresh()
+{
+	Clv.LoadFileAndFolder(Clv.GetCurParentPath());
 }
