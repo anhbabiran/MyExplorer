@@ -287,9 +287,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			//------------------------------------------------------------------------------
 		case NM_DBLCLK:
+		{
+			int iSelected = 0;
 			if (pnm->hwndFrom == Clv.GetHandle())
-				Clv.LoadCurSel();
-			break;
+			{
+				iSelected = ListView_GetNextItem(Clv.GetHandle(), -1, LVNI_SELECTED); // ĐIều kiện click
+				if (iSelected != -1)
+					Clv.LoadCurSel();
+				break;
+			}
+		}
 			//------------------------------------------------------------------------------
 			
 			case NM_CUSTOMDRAW: //Ve lai cua so con
@@ -439,28 +446,35 @@ void DoPaste()
 	if (wcslen(dest) < 3)
 		StrCat(dest, _T("\\"));
 	//Xử lí đường dẫn file
+	TCHAR destTmp[10240];
 	for (int i = 0; i < listFile.size(); i++)
 	{
+		StrCpy(destTmp, dest);
 		//Lấy tên file
 		TCHAR *parent;
 		int nBackSlachPos = (StrRStrI(listFile[i], NULL, _T("\\")) - listFile[i]);
 		parent = new TCHAR[wcslen(listFile[i])];
 		StrNCpy(parent, listFile[i] + nBackSlachPos + 1, wcslen(listFile[i]));
 		
-		StrCat(dest, _T("\\"));
-		StrCat(dest, parent);
+		StrCat(destTmp, _T("\\"));
+		StrCat(destTmp, parent);
+		/// Thêm Đk kiểm tra
+		/// thêm hook
+		if (GetLastError() == ERROR_ALREADY_EXISTS)
+		{
+			MessageBox(hWnd, _T("Thư mục đã tồn tại!"), _T("Lỗi"), NULL);
+		}
 		if (checkEvent == 1)
 		{
-			CopyFile(listFile[i],dest, NULL);
-			DoRefresh();
+			CopyFile(listFile[i], destTmp, NULL);
 		}
 		if (checkEvent == 2)
 		{
-			MoveFile(listFile[i], dest);
-			DoRefresh();
+			MoveFile(listFile[i], destTmp);
 		}
-		//MessageBox(hWnd, dest, NULL, NULL);
+		//MessageBox(hWnd, destTmp, NULL, NULL);
 	}
+	DoRefresh();
 	
 }
 
