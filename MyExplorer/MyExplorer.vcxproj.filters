@@ -99,6 +99,45 @@
     <Image Include="bitmap4.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="toolbar\arrow_left.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\arrow_right.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\arrow_up.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\bitmap2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\bmp00001.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\bmp00002.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\clipboard_cut.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\Copy.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\folder.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\Paste.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\refresh.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\rename.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\search.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="MyExplorer.manifest" />

@@ -19,8 +19,8 @@ public:
 		int nWidth, int nHeight, int x = CW_USEDEFAULT, int y = 0,
 		long lStyle = WS_CHILD | WS_VISIBLE | WS_BORDER | TBSTYLE_FLAT);
 	BOOL AddButton(BYTE fsState, BYTE fsStyle, int iBitmap, int idCommand, LPTSTR iString, DWORD_PTR dwData);
-	void SetButtonImages();
-	HWND AddNonButtonControl(LPTSTR className,LPTSTR caption, int styles,int ID,int width,int height,int btnIndex,int iCommand);
+	void SetButtonImages(int iBitmap, HIMAGELIST hIml);
+	HWND AddNonButtonControl(LPTSTR className, LPTSTR caption, int styles, int ID, int width, int height, int btnIndex, int iCommand);
 	HWND GetHandle();
 	void EnableBack(BOOL bEnable);
 	void EnableForward(BOOL bEnable);
