@@ -292,19 +292,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					case IDC_TOOLBAR_PASTE:
 						DoPaste();
 						break;
+
 					case IDC_TOOLBAR_DELETE:
 						DoDelete();
 						break;
+					case IDC_TOOLBAR_RENAME:
+						DoRename();
+						break;
+					case IDC_TOOLBAR_NEW:
+						CreateNewFolder();
+						break;
 						
-					
+					case IDC_TOOLBAR_REFRESH:
+						DoRefresh();
+						break;
+
 					case IDC_TOOLBAR_UP:
-					DoGoUp();
+						DoGoUp();
 					break;
 					case IDC_TOOLBAR_BACK:
-					DoGoBack();
+						DoGoBack();
 					break;
 					case IDC_TOOLBAR_FORWARD:
-					DoGoForward();
+						DoGoForward();
 					break;
 					
 				}
