@@ -10,7 +10,6 @@
 #include <shlwapi.h>
 #pragma comment(lib, "shlwapi.lib")
 
-////////////////////////////////////TESTTTTTTTTTTTTT////////////////////
 void DoViewChange(LPNMTOOLBAR lpnmToolBar);
 void DoSizeTreeView();
 
@@ -262,7 +261,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			TreeView.Expand(TreeView.GetCurSel());
 			Clv.DeleteAll(); //Xóa sạch List View để nạp cái mới
 			Clv.LoadChild(TreeView.GetCurPath(), Cdr);
-			
+
 			History.InsertAfterCur(TreeView.GetCurPath());
 			if (History.GetCur()->GetPrev() != NULL)
 			{
@@ -282,8 +281,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				//Toolbar
 				case IDC_TOOLBAR:
-				switch (lpnmToolBar->iItem)
-				{
+					switch (lpnmToolBar->iItem)
+					{
 					case IDC_TOOLBAR_COPY:
 						DoCopy();
 						break;
@@ -303,31 +302,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					case IDC_TOOLBAR_NEW:
 						CreateNewFolder();
 						break;
-						
+
 					case IDC_TOOLBAR_REFRESH:
 						DoRefresh();
 						break;
 
 					case IDC_TOOLBAR_UP:
 						DoGoUp();
-					break;
+						break;
 					case IDC_TOOLBAR_BACK:
 						DoGoBack();
-					break;
+						break;
 					case IDC_TOOLBAR_FORWARD:
 						DoGoForward();
+						break;
+
+					}
 					break;
-					
-				}
-				break; 
-				//// Address
+					//// Address
 				case IDC_ADDRESS:
-				if (lpnmToolBar->iItem == IDC_ADDRESS_GO)
-				DoGo();
-				break;
+					if (lpnmToolBar->iItem == IDC_ADDRESS_GO)
+						DoGo();
+					break;
 			}
 			break;
-
+			////////////////////////////
+		case NM_RCLICK:
+		{
+			POINT cursor;
+			GetCursorPos(&cursor);
+			TrackPopupMenu((HMENU)
+				GetSubMenu(LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU4)), 0),
+				TPM_RIGHTBUTTON, cursor.x, cursor.y, 0, hWnd, NULL);
+			break;
+		}
 			//------------------------------------------------------------------------------
 		case NM_DBLCLK:
 		{
@@ -337,8 +345,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				iSelected = ListView_GetNextItem(Clv.GetHandle(), -1, LVNI_SELECTED); // ĐIều kiện click
 				if (iSelected != -1)
 					Clv.LoadCurSel();
-				break;
 			}
+			break;
 		}
 			//------------------------------------------------------------------------------
 			case NM_CUSTOMDRAW: //Ve lai cua so con
@@ -385,6 +393,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			Clv.ChangeViewOption(0);
 			break;
 		//////////////////////////////
+		case ID_NEW_FOLDER:
+			CreateNewFolder();
+			break;
+		case ID__REFRESH:
+			DoRefresh();
+			break;
+			
+		case ID__COPY:
+		{
+			DoCopy();
+			break;
+		}
+		case ID__CUT:
+		{
+			DoCut();
+			break;
+		}
+		case ID__PASTE:
+		{
+			DoPaste();
+			break;
+		}
+			////////////////////////////////////////////
 		case IDM_ABOUT:
 		{
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -527,7 +558,7 @@ void DoPaste()
 		int nBackSlachPos = (StrRStrI(listFile[i], NULL, _T("\\")) - listFile[i]);
 		parent = new TCHAR[wcslen(listFile[i])];
 		StrNCpy(parent, listFile[i] + nBackSlachPos + 1, wcslen(listFile[i]));
-		
+
 		StrCat(destTmp, _T("\\"));
 		StrCat(destTmp, parent);
 		/// Thêm Đk kiểm tra
@@ -548,7 +579,7 @@ void DoPaste()
 	}
 	listFile.clear();
 	DoRefresh();
-	
+
 }
 
 void DoDelete()
