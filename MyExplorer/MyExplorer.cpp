@@ -21,6 +21,7 @@ void DoCut();
 void DoPaste();
 void DoRefresh();
 void DoDelete();
+void DoRename();
 
 void DoGo();
 void DoGoUp();
@@ -44,6 +45,7 @@ HWND hWnd;
 vector<LPCWSTR> listFile; // Để chứa các file để copy hoặc paste
 TCHAR sourceEvent[10240]; // Chứa đường dẫn event
 int checkEvent = 0;  // 1 là copy, 2 là cut
+TCHAR buffName[10240];  // Tên lúc rename hoặc createFolder
 ////////////////////////////////
 RECT g_TreeViewRect;
 CAddress *g_Address = new CAddress;
@@ -53,6 +55,8 @@ CTreeView *g_TreeView = new CTreeView;
 DList *g_History = new DList;
 
 NMHDR *pnm;
+
+INT_PTR CALLBACK	Name(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 //////////////////////////////////////////////////////////////////////
 
 
@@ -235,6 +239,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			DoCut();
 		if ((int)wParam == CTRL_N)
 			CreateNewFolder();
+		if ((int)wParam == CTRL_R)
+			DoRename();
 		break;
 	}
 
@@ -411,6 +417,34 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)FALSE;
 }
 
+INT_PTR CALLBACK Name(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	HWND hWndCtrl;
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			hWndCtrl = GetDlgItem(hDlg, IDC_EDIT1);
+			StrCpy(buffName, _T("\\0"));
+			GetWindowText(hWndCtrl, buffName, 10240);
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		else if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
 
 void DoViewChange(LPNMTOOLBAR lpnmToolBar)
 {
@@ -514,6 +548,46 @@ void DoDelete()
 	DoRefresh();
 }
 
+void DoRename()
+{
+	TCHAR pathSource[10240];
+	StrCpy(pathSource, Clv.GetCurSelPath());
+
+	TCHAR pathtmp[10240];
+	StrCpy(pathtmp, Clv.GetCurParentPath());
+	//MessageBox(hWnd, pathtmp, NULL, NULL);
+	if (wcslen(pathtmp) != 3)
+	{
+		StrCat(pathtmp, _T("\\"));  // ->>>>>>>>> Tên đường dẫn cha chứa thằng Item chọn
+	}
+	//MessageBox(hWnd, pathtmp, NULL, NULL);
+	
+	DialogBox(hInst, MAKEINTRESOURCE(IDD_NAME), hWnd, Name);
+	
+	//Lấy tên file
+	TCHAR *parent;
+	int nBackSlachPos = (StrRStrI(pathSource, NULL, _T("\\")) - pathSource);
+	parent = new TCHAR[wcslen(pathSource)];
+	StrNCpy(parent, pathSource + nBackSlachPos + 1, wcslen(pathSource));
+
+	//Lấy đuôi file
+	TCHAR *parent2; // ->>>>>>>>>>> chứa đuôi file
+	nBackSlachPos = (StrRStrI(parent, NULL, _T(".")) - parent);
+	parent2 = new TCHAR[wcslen(parent)];
+	StrNCpy(parent2, parent + nBackSlachPos + 1, wcslen(parent));
+	
+	//MessageBox(hWnd, parent2, NULL, NULL);
+	if (StrCmp(buffName, _T("")) != 0)
+	{
+		StrCat(pathtmp, buffName);
+		StrCat(pathtmp, _T("."));
+		StrCat(pathtmp, parent2);
+		MoveFile(pathSource, pathtmp);
+	}
+	else
+		return;
+	DoRefresh();
+}
 
 void CreateNewFolder()
 {
@@ -523,7 +597,13 @@ void CreateNewFolder()
 	{
 		StrCat(pathtmp, _T("\\"));
 	}
-	StrCat(pathtmp, _T("New folder"));
+
+	DialogBox(hInst, MAKEINTRESOURCE(IDD_NAME), hWnd, Name);
+	if (StrCmp(buffName, _T("")) != 0)
+		StrCat(pathtmp, buffName);
+	else
+		StrCat(pathtmp, _T("New folder"));
+
 	if (CreateDirectory(pathtmp, NULL) == 0 || GetLastError() == ERROR_ALREADY_EXISTS)
 	{
 		MessageBox(hWnd, _T("Không thể tạo thư mục!"), _T("Lỗi"), NULL);
@@ -533,8 +613,6 @@ void CreateNewFolder()
 		MessageBox(hWnd, _T("Tạo thành công!"), _T("Thông báo"), NULL);
 	}
 	DoRefresh();	//Refresh. Đúng. Nhưng hàm parent sida
-
-	// Cho nhập tên ...
 }
 
 void DoRefresh()
