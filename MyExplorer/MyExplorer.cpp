@@ -20,6 +20,12 @@ void DoCopy();
 void DoCut();
 void DoPaste();
 void DoRefresh();
+void DoDelete();
+
+void DoGo();
+void DoGoUp();
+void DoGoBack();
+void DoGoForward();
 
 //include
 #include "CListView.h"
@@ -28,7 +34,7 @@ void DoRefresh();
 #include "CStatus.h"
 #include "CToolBar.h"
 #include "CTreeView.h"
-
+#include "DList.h"
 //globla variable
 CListView Clv;
 CDrive *Cdr = new CDrive;
@@ -44,6 +50,7 @@ CAddress *g_Address = new CAddress;
 CStatus *g_Status = new CStatus;
 CToolBar *g_ToolBar = new CToolBar;
 CTreeView *g_TreeView = new CTreeView;
+DList *g_History = new DList;
 
 NMHDR *pnm;
 //////////////////////////////////////////////////////////////////////
@@ -202,7 +209,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		g_Status = new CStatus;
 		g_Status->Create(hWnd, IDC_STATUSBAR, hInst);
 
-
 		///
 
 		Cdr->GetSystemDrives();
@@ -227,6 +233,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			DoPaste();
 		if ((int)wParam == CTRL_X)
 			DoCut();
+		if ((int)wParam == CTRL_N)
+			CreateNewFolder();
 		break;
 	}
 
@@ -247,12 +255,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			g_TreeView->Expand(g_TreeView->GetCurSel());
 			Clv.DeleteAll(); //Xóa sạch List View để nạp cái mới
 			Clv.LoadChild(g_TreeView->GetCurPath(), Cdr);
-			/*
+			
 			g_History->InsertAfterCur(g_TreeView->GetCurPath());
 			if (g_History->GetCur()->GetPrev() != NULL)
 			{
 			g_ToolBar->EnableBack(TRUE);
-			}*/
+			}
 			break;
 			//------------------------------------------------------------------------------
 		case NM_CLICK:
@@ -278,8 +286,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					case IDC_TOOLBAR_PASTE:
 						DoPaste();
 						break;
+					case IDC_TOOLBAR_DELETE:
+						DoDelete();
+						break;
 						
-					/*
+					
 					case IDC_TOOLBAR_UP:
 					DoGoUp();
 					break;
@@ -289,15 +300,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					case IDC_TOOLBAR_FORWARD:
 					DoGoForward();
 					break;
-					*/
+					
 				}
 				break; //Case IDC_TOOLBAR
 				//-----------------------------------------------------------------------
-				/*
 				case IDC_ADDRESS:
 				if (lpnmToolBar->iItem == IDC_ADDRESS_GO)
 				DoGo();
-				break;*/
+				break;
 			}//switch (pnm->idFrom)
 			break; //case NM_CLICK:
 
@@ -314,7 +324,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 		}
 			//------------------------------------------------------------------------------
-			
 			case NM_CUSTOMDRAW: //Ve lai cua so con
 			if (pnm->hwndFrom == g_TreeView->GetHandle())
 			DoSizeTreeView();
@@ -331,7 +340,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 		g_TreeView->Size(lParam);
 		GetWindowRect(g_TreeView->GetHandle(), &g_TreeViewRect); //Cap nhat lai cho TreeView
-
 
 		Clv.Size();
 		g_Status->Size();
@@ -490,9 +498,22 @@ void DoPaste()
 		}
 		//MessageBox(hWnd, destTmp, NULL, NULL);
 	}
+	listFile.clear();
 	DoRefresh();
 	
 }
+
+void DoDelete()
+{
+	listFile = Clv.GetListPath();
+	for (int i = 0; i < listFile.size(); i++)
+	{
+		DeleteFile(listFile[i]);
+	}
+	listFile.clear();
+	DoRefresh();
+}
+
 
 void CreateNewFolder()
 {
@@ -519,4 +540,41 @@ void CreateNewFolder()
 void DoRefresh()
 {
 	Clv.LoadFileAndFolder(Clv.GetCurParentPath());
+}
+
+
+void DoGoForward()
+{
+	g_History->GoForward();
+	g_ToolBar->EnableBack(TRUE);
+
+	if (g_History->GetCur()->GetNext() == NULL) //Không thể forward nữa
+		g_ToolBar->EnableForward(FALSE);
+
+	Clv.LoadChild(g_History->GetCur()->GetPath(), Cdr);
+}
+
+void DoGoBack()
+{
+	g_History->GoBack();
+	g_ToolBar->EnableForward(TRUE);
+
+	if (g_History->GetCur()->GetPrev() == NULL) //Không thể Back nữa
+		g_ToolBar->EnableBack(FALSE);
+
+	Clv.LoadChild(g_History->GetCur()->GetPath(), Cdr);
+}
+
+void DoGoUp()
+{
+	Clv.Up(Cdr);
+	g_History->InsertAfterCur(Clv.GetCurParentPath());
+	g_ToolBar->EnableBack(TRUE);
+}
+
+void DoGo()
+{
+	TCHAR *buffer = new TCHAR[10240];
+	GetDlgItemText(g_Address->GetHandle(), IDC_ADDRESS_EDIT, buffer, 10240);
+	Clv.LoadChild(buffer, Cdr);
 }
