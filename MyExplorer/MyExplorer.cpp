@@ -196,6 +196,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		RegisterHotKey(hWnd, CTRL_R, MOD_CONTROL, 0x52);
 		RegisterHotKey(hWnd, CTRL_N, MOD_CONTROL, 0x4E);
 		RegisterHotKey(hWnd, DELETEKEY, NULL, 0x2E);
+		RegisterHotKey(hWnd, REFRESHKEY, NULL, VK_F5);
 
 		RECT main;
 		GetWindowRect(hWnd, &main);
@@ -239,6 +240,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			DoRename();
 		if ((int)wParam == DELETEKEY)
 			DoDelete();
+		if ((int)wParam == REFRESHKEY)
+			DoRefresh();
 		break;
 	}
 
