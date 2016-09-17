@@ -48,11 +48,11 @@ int checkEvent = 0;  // 1 là copy, 2 là cut
 TCHAR buffName[10240];  // Tên lúc rename hoặc createFolder
 ////////////////////////////////
 RECT g_TreeViewRect;
-CAddress *g_Address = new CAddress;
-CStatus *g_Status = new CStatus;
-CToolBar *g_ToolBar = new CToolBar;
-CTreeView *g_TreeView = new CTreeView;
-DList *g_History = new DList;
+CAddress Address;
+CStatus Status;
+CToolBar ToolBar;
+CTreeView TreeView;
+DList History;
 
 NMHDR *pnm;
 
@@ -195,35 +195,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		RegisterHotKey(hWnd, CTRL_X, MOD_CONTROL, 0x58);
 		RegisterHotKey(hWnd, CTRL_R, MOD_CONTROL, 0x52);
 		RegisterHotKey(hWnd, CTRL_N, MOD_CONTROL, 0x4E);
+		RegisterHotKey(hWnd, DELETEKEY, NULL, 0x2E);
 
 		RECT main;
 		GetWindowRect(hWnd, &main);
 
-		////
-		g_Address = new CAddress;
-		g_Address->Create(hWnd, IDC_ADDRESS, hInst);
+		//// Tạo thanh address
+		Address.Create(hWnd, IDC_ADDRESS, hInst);
 
-		//Khởi tạo các control của mình
+		//// Tạo toolbar
+		ToolBar.Create(hWnd, IDC_TOOLBAR, hInst, 0, 0, 0, 0);
+		ToolBar.EnableBack(FALSE);
+		ToolBar.EnableForward(FALSE);
 
-		g_ToolBar = new CToolBar;
-		g_ToolBar->Create(hWnd, IDC_TOOLBAR, hInst, 0, 0, 0, 0);
-		g_ToolBar->EnableBack(FALSE);
-		g_ToolBar->EnableForward(FALSE);
+		//// Tạo thanh status
+		Status.Create(hWnd, IDC_STATUSBAR, hInst);
 
-		g_Status = new CStatus;
-		g_Status->Create(hWnd, IDC_STATUSBAR, hInst);
-
-		///
-
+		/// Lấy các ổ đĩa
 		Cdr->GetSystemDrives();
-		///
 		
-		g_TreeView = new CTreeView;
-		g_TreeView->Create(hWnd, IDC_TREEVIEW, hInst, main.right / 3, main.bottom);
-		g_TreeView->LoadMyComputer(Cdr);
-		g_TreeView->GetFocus();
+		/// Tạo treeView
+		TreeView.Create(hWnd, IDC_TREEVIEW, hInst, main.right / 3, main.bottom);
+		TreeView.LoadMyComputer(Cdr);
+		TreeView.GetFocus();
 		
-		//
+		// Tạo listView
 		Clv.Create(hWnd, IDC_LISTVIEW, hInst, (main.right - main.left) * 2 / 3 + 1, main.bottom, main.right / 3);
 		Clv.LoadMyComputer(Cdr); // Lỗi ch load hết dc listview
 		break;
@@ -241,6 +237,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			CreateNewFolder();
 		if ((int)wParam == CTRL_R)
 			DoRename();
+		if ((int)wParam == DELETEKEY)
+			DoDelete();
 		break;
 	}
 
@@ -254,18 +252,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch (pnm->code)
 		{
 		case TVN_ITEMEXPANDING:
-			g_TreeView->PreloadExpanding(lpnmTree->itemOld.hItem, lpnmTree->itemNew.hItem);
+			TreeView.PreloadExpanding(lpnmTree->itemOld.hItem, lpnmTree->itemNew.hItem);
 			break;
 			//------------------------------------------------------------------------------
 		case TVN_SELCHANGED:
-			g_TreeView->Expand(g_TreeView->GetCurSel());
+			TreeView.Expand(TreeView.GetCurSel());
 			Clv.DeleteAll(); //Xóa sạch List View để nạp cái mới
-			Clv.LoadChild(g_TreeView->GetCurPath(), Cdr);
+			Clv.LoadChild(TreeView.GetCurPath(), Cdr);
 			
-			g_History->InsertAfterCur(g_TreeView->GetCurPath());
-			if (g_History->GetCur()->GetPrev() != NULL)
+			History.InsertAfterCur(TreeView.GetCurPath());
+			if (History.GetCur()->GetPrev() != NULL)
 			{
-			g_ToolBar->EnableBack(TRUE);
+				ToolBar.EnableBack(TRUE);
 			}
 			break;
 			//------------------------------------------------------------------------------
@@ -279,7 +277,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			else
 				switch (pnm->idFrom)
 			{
-				
+				//Toolbar
 				case IDC_TOOLBAR:
 				switch (lpnmToolBar->iItem)
 				{
@@ -318,14 +316,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					break;
 					
 				}
-				break; //Case IDC_TOOLBAR
-				//-----------------------------------------------------------------------
+				break; 
+				//// Address
 				case IDC_ADDRESS:
 				if (lpnmToolBar->iItem == IDC_ADDRESS_GO)
 				DoGo();
 				break;
-			}//switch (pnm->idFrom)
-			break; //case NM_CLICK:
+			}
+			break;
 
 			//------------------------------------------------------------------------------
 		case NM_DBLCLK:
@@ -341,7 +339,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 			//------------------------------------------------------------------------------
 			case NM_CUSTOMDRAW: //Ve lai cua so con
-			if (pnm->hwndFrom == g_TreeView->GetHandle())
+			if (pnm->hwndFrom == TreeView.GetHandle())
 			DoSizeTreeView();
 			break;
 			//------------------------------------------------------------------------------
@@ -354,16 +352,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	}
 	case WM_SIZE:
-		g_TreeView->Size(lParam);
-		GetWindowRect(g_TreeView->GetHandle(), &g_TreeViewRect); //Cap nhat lai cho TreeView
-
+		TreeView.Size(lParam);
+		GetWindowRect(TreeView.GetHandle(), &g_TreeViewRect); //Cap nhat lai cho TreeView
 		Clv.Size();
-		g_Status->Size();
-
-		SendMessage(g_ToolBar->GetHandle(), TB_AUTOSIZE, 0, (LPARAM)0);
-
-		SendMessage(g_Address->GetHandle(), TB_AUTOSIZE, 0, (LPARAM)0);
-		g_Address->Size();
+		Status.Size();
+		SendMessage(ToolBar.GetHandle(), TB_AUTOSIZE, 0, (LPARAM)0);
+		SendMessage(Address.GetHandle(), TB_AUTOSIZE, 0, (LPARAM)0);
+		Address.Size();
 		break;
 ///////////////////////////////
 	case WM_COMMAND:
@@ -373,7 +368,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch (wmId)
 		{
 		///////////////////////////////
-			// lỗi k load hết dc program file
+			// lỗi k load hết dc LV
+		case ID_VIEW_LIST:
+			Clv.ChangeViewOption(2);
+			break;
+		case ID_VIEW_SMALLICONS:
+			Clv.ChangeViewOption(3);
+			break;
 		case ID_VIEW_DETAILS:
 			Clv.ChangeViewOption(1);
 			break;
@@ -476,7 +477,7 @@ void DoViewChange(LPNMTOOLBAR lpnmToolBar)
 
 	TrackPopupMenuEx(hPopupMenu,
 		TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL,
-		rc.left, rc.bottom, g_ToolBar->GetHandle(), &tpm);
+		rc.left, rc.bottom, ToolBar.GetHandle(), &tpm);
 
 	DestroyMenu(hMenuLoaded);
 }
@@ -484,7 +485,7 @@ void DoViewChange(LPNMTOOLBAR lpnmToolBar)
 void DoSizeTreeView()
 {
 	RECT newTreeRC;
-	GetClientRect(g_TreeView->GetHandle(), &newTreeRC);
+	GetClientRect(TreeView.GetHandle(), &newTreeRC);
 
 	if (newTreeRC.right != g_TreeViewRect.right)
 	{
@@ -633,36 +634,36 @@ void DoRefresh()
 
 void DoGoForward()
 {
-	g_History->GoForward();
-	g_ToolBar->EnableBack(TRUE);
+	History.GoForward();
+	ToolBar.EnableBack(TRUE);
 
-	if (g_History->GetCur()->GetNext() == NULL) //Không thể forward nữa
-		g_ToolBar->EnableForward(FALSE);
+	if (History.GetCur()->GetNext() == NULL) //Không thể forward nữa
+		ToolBar.EnableForward(FALSE);
 
-	Clv.LoadChild(g_History->GetCur()->GetPath(), Cdr);
+	Clv.LoadChild(History.GetCur()->GetPath(), Cdr);
 }
 
 void DoGoBack()
 {
-	g_History->GoBack();
-	g_ToolBar->EnableForward(TRUE);
+	History.GoBack();
+	ToolBar.EnableForward(TRUE);
 
-	if (g_History->GetCur()->GetPrev() == NULL) //Không thể Back nữa
-		g_ToolBar->EnableBack(FALSE);
+	if (History.GetCur()->GetPrev() == NULL) //Không thể Back nữa
+		ToolBar.EnableBack(FALSE);
 
-	Clv.LoadChild(g_History->GetCur()->GetPath(), Cdr);
+	Clv.LoadChild(History.GetCur()->GetPath(), Cdr);
 }
 
 void DoGoUp()
 {
 	Clv.Up(Cdr);
-	g_History->InsertAfterCur(Clv.GetCurParentPath());
-	g_ToolBar->EnableBack(TRUE);
+	History.InsertAfterCur(Clv.GetCurParentPath());
+	ToolBar.EnableBack(TRUE);
 }
 
 void DoGo()
 {
 	TCHAR *buffer = new TCHAR[10240];
-	GetDlgItemText(g_Address->GetHandle(), IDC_ADDRESS_EDIT, buffer, 10240);
+	GetDlgItemText(Address.GetHandle(), IDC_ADDRESS_EDIT, buffer, 10240);
 	Clv.LoadChild(buffer, Cdr);
 }
