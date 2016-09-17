@@ -111,6 +111,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="bitmap4.bmp" />
+    <Image Include="go.ico" />
     <Image Include="MyExplorer.ico" />
     <Image Include="small.ico" />
     <Image Include="toolbar\arrow_left.bmp" />
@@ -122,7 +123,9 @@
     <Image Include="toolbar\clipboard_cut.bmp" />
     <Image Include="toolbar\Copy.bmp" />
     <Image Include="toolbar\folder.bmp" />
+    <Image Include="toolbar\icon3.ico" />
     <Image Include="toolbar\Paste.bmp" />
+    <Image Include="toolbar\ref.bmp" />
     <Image Include="toolbar\refresh.bmp" />
     <Image Include="toolbar\rename.bmp" />
     <Image Include="toolbar\search.bmp" />

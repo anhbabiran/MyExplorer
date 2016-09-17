@@ -36,7 +36,7 @@ void CToolBar::Create(HWND parentWnd, long ID, HINSTANCE hParentInst,
 	SetButtonImages(IDB_RENAME, hIml);
 	SetButtonImages(IDB_NEW0, hIml);
 	SetButtonImages(IDB_DEL, hIml);
-	SetButtonImages(IDB_REFRESH, hIml);
+	SetButtonImages(IDB_REF, hIml);
 	SetButtonImages(IDB_FAR, hIml);
 
 	SendMessage(m_hToolBar, TB_SETIMAGELIST, 0, (LPARAM)hIml);

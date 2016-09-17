@@ -138,6 +138,15 @@
     <Image Include="toolbar\search.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="toolbar\ref.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="toolbar\icon3.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="go.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="MyExplorer.manifest" />

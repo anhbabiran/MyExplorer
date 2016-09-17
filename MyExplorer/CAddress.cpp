@@ -44,7 +44,7 @@ void CAddress::SetButtonImages()
 	SendMessage(m_hAddress,TB_SETBITMAPSIZE,0,MAKELONG(16, 16));
 
 	HIMAGELIST hIml = ImageList_Create(16, 16, ILC_MASK | ILC_COLOR32, 1, 0);
-	HICON hIcon = LoadIcon(m_hInst, MAKEINTRESOURCE(IDI_ICON2));
+	HICON hIcon = LoadIcon(m_hInst, MAKEINTRESOURCE(IDI_GO));
 	ImageList_AddIcon(hIml, hIcon);
 
 	//ImageList_SetBkColor(hIml, CLR_NONE);
